@@ -1,0 +1,6 @@
+.venv/
+_test_cases/
+__pycache__/
+tests/
+.vscode/
+web_app/temp/

@@ -1,0 +1,47 @@
+{
+  "benchmark_metadata": {
+    "name": "Default Benchmark",
+    "description": "A benchmark for testing the genetic algorithm with default settings."
+  },
+
+  "execution":{
+    "ga": 1,
+    "vitamin": 1,
+    "timeout": 5,
+    "directory": "MyGA/_test_cases",
+    "benchmark_output": "MyGA/_test_cases/output/benchmark_output_prova.csv"
+  },
+  
+  "start_parameters": {
+    "num_states": 2,
+    "num_agents": 1,
+    "num_agent_actions": 2,
+    "num_aps": 2,
+    "sparsity": 0.5,
+    "coalition_size": 1,
+    "k": 1,
+    "set_size": 1
+  },
+
+  "execution_plan": {
+    "iterations_per_config": 1,
+    "num_configs": 3,
+    "final_values":
+    {
+        "fin_num_states": 8,
+        "fin_num_agents": 4,
+        "fin_num_agent_actions": 3,
+        "fin_num_aps": 8,
+        "fin_sparsity": 1,
+        "fin_coalition_size": 2,
+        "fin_k": 1,
+        "fin_set_size": 3
+    }
+  },
+
+  "plot":{
+    "plot_output": "MyGA/_test_cases/output/benchmark_plot.png",
+    "plot_key": "configuration"
+  }
+
+}
