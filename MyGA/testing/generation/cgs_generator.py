@@ -1,6 +1,5 @@
 """Generate random CGS models and test formulas for search_strategy evaluation."""
 import random
-import itertools
 from pathlib import Path
 
 from model_checker.parsers.game_structures.cgs.cgs_actions import (
@@ -77,14 +76,29 @@ def generate_random_cgs(
         current_action = chr(ord(current_action)+1)
         i+=1
 
-    all_possible_joints = list(AGENT_ACTION_SEPARATOR.join(joint) for joint in itertools.product(agent_actions, repeat=num_agents))
     idle_joint = AGENT_ACTION_SEPARATOR.join(idle_token for _ in range(num_agents))
-    all_possible_joints.remove(idle_joint)  # Remove idle joint from random selection
+
+    def sample_joint_actions(sample_size: int) -> list[str]:
+        """Sample distinct joint actions without materializing the product."""
+        action_count = len(agent_actions)
+        total_joints = action_count ** num_agents
+        sample_size = min(sample_size, total_joints - 1)
+
+        # The all-idle tuple is index 0 because idle is the first action.
+        ranks = random.sample(range(1, total_joints), sample_size)
+        sampled = []
+        for rank in ranks:
+            tokens = []
+            for _ in range(num_agents):
+                rank, action_index = divmod(rank, action_count)
+                tokens.append(agent_actions[action_index])
+            sampled.append(AGENT_ACTION_SEPARATOR.join(reversed(tokens)))
+        return sampled
     
     transitions = []
     for src in range(num_states):
         row = []
-        row_joints = random.sample(all_possible_joints, min(int(num_states*sparsity),len(all_possible_joints)))  # Randomly select joint actions for this row
+        row_joints = sample_joint_actions(int(num_states * sparsity))  # Randomly select unique joint actions for this row
         joints_destinations = list(list() for _ in range(num_states))
         joints_destinations[src].append(idle_joint)  # Ensure self-loop with idle joint
                     
