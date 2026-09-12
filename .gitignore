@@ -3,4 +3,7 @@ _test_cases/
 __pycache__/
 tests/
 .vscode/
-web_app/temp/
+temp/
+old/
+lib/*/
+Big_test.json
