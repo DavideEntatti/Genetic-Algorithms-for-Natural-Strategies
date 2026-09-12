@@ -118,7 +118,6 @@ def search_strategy(formula, model_path):
                         #     continue
                         #print("\nCheck:\n")
                         if pruned_right.accepting_run():
-                            print(i)
                             if config.DYNAMIC_K == 0:
                                 found_new_solution = True
                                 solution = strategy

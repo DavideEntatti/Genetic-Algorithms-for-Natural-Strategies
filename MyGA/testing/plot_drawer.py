@@ -108,6 +108,12 @@ def _draw_distribution(rows, selected, plot_file):
         values = [float(row[field]) for row in rows if row.get(field, "").strip()]
         if values:
             ax.hist(values, bins="auto", alpha=0.55, label=field)
+            if len(values) > 1:
+                var_value = statistics.variance(values)  # Varianza campionaria (N-1)
+                print(f"Varianza per '{field}': {var_value:.4f}")
+            else:
+                print(f"Varianza per '{field}': Dati insufficienti (1 solo valore)")
+
     ax.set_xlabel("Valore del risultato")
     ax.set_ylabel("Frequenza")
     ax.set_title("Distribuzione dei risultati")

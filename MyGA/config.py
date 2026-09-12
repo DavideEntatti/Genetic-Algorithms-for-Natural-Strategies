@@ -1,8 +1,8 @@
 #Parametri algoritmo genetico
 class config:
     #GENERAZIONE
-    POPULATION_SIZE = 20
-    MAX_GENERATIONS = 20
+    POPULATION_SIZE = 50
+    MAX_GENERATIONS = 50
     N_ELITE = 5
     EXTRA_STRATEGIES = 5
     TOURNAMENT_SIZE = 8

@@ -2,6 +2,7 @@ import streamlit as st
 from pyvis.network import Network
 import networkx as nx
 import os
+from pathlib import Path
 
 from MyGA.testing.running.case_runner import run_case
 from MyGA.web_app.display_cgs import display_CGS
@@ -9,6 +10,8 @@ from MyGA.models.formula.fromula_functions import NatATL_formula_info
 from MyGA.config import config
 
 temp_path = "MyGA/web_app/temp"
+folder = Path("MyGA/web_app/temp")
+folder.mkdir(parents=True, exist_ok=True)
 
 # 1. Configurazione della pagina (Wide mode per usare tutto lo schermo)
 st.set_page_config(layout="wide", page_title="CGS Visualizer")
