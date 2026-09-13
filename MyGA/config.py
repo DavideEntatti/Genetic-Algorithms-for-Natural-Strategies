@@ -15,19 +15,21 @@ class config:
     DYNAMIC_K = 0
 
     @classmethod
-    def set_config(self, pop_size, gens, elites, extras, tournament, ord_mut, act_mut, cond_mut, dyn_k):
-        self.POPULATION_SIZE = pop_size
-        self.MAX_GENERATIONS = gens
-        self.N_ELITE = elites
-        self.EXTRA_STRATEGIES = extras
-        self.TOURNAMENT_SIZE = tournament
+    def set_config(self, pop_size=None, gens=None, elites=None, extras=None,
+                    tournament=None, ord_mut=None, act_mut=None, cond_mut=None, dyn_k=None):
+        
+        if pop_size is not None: self.POPULATION_SIZE = pop_size
+        if gens is not None: self.MAX_GENERATIONS = gens
+        if elites is not None: self.N_ELITE = elites
+        if extras is not None: self.EXTRA_STRATEGIES = extras
+        if tournament is not None: self.TOURNAMENT_SIZE = tournament
         
         #MUTATION
-        self.ORDER_MUTATION = ord_mut
-        self.ACTION_MUTATION = act_mut
-        self.CONDITION_MUTATION = cond_mut
+        if ord_mut is not None: self.ORDER_MUTATION = ord_mut
+        if act_mut is not None: self.ACTION_MUTATION = act_mut
+        if cond_mut is not None: self.CONDITION_MUTATION = cond_mut
 
-        self.DYNAMIC_K = dyn_k
+        if dyn_k is not None: self.DYNAMIC_K = dyn_k
 
         if self.N_ELITE + self.EXTRA_STRATEGIES > self.POPULATION_SIZE:
             raise Exception("Invalid GA configuration: N_ELITES + EXTRA_STRATEGIES must be lower than POPULATION_SIZE")

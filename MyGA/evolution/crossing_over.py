@@ -39,7 +39,7 @@ def tournament_selection(population):
     #Scelgo il migiore tra le strategie selezionate
     # If the configured tournament size is larger than current population,
     # sample with the available size (sample without replacement).
-    ts = min(config.TOURNAMENT_SIZE, max(1, len(population)))
+    ts = max(min(config.TOURNAMENT_SIZE, len(population)),1)
     if ts <= 0:
         return population[0]
     tournament = random.sample(population, ts)

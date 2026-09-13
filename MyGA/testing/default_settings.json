@@ -25,7 +25,7 @@
 
   "execution_plan": {
     "iterations_per_config": 1,
-    "num_configs": 3,
+    "num_configs": 7,
     "final_values":
     {
         "fin_num_states": 8,
@@ -39,9 +39,9 @@
     }
   },
 
-  "plot":{
-    "plot_output": "MyGA/_test_cases/output/benchmark_plot.png",
-    "plot_key": "configuration"
+  "template_parameters":{
+    "templates":["G", "F", "X", "U"],
+    "template_repetitions": 20
   }
 
 }

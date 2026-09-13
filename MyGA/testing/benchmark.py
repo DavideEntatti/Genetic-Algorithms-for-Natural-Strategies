@@ -2,6 +2,7 @@ from MyGA.testing.running.case_runner import run_case
 from MyGA.testing.generation.case_generator import generate_case
 import csv
 import json
+import random
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -14,7 +15,7 @@ def run_benchmark(settings_path):
         final = settings['execution_plan']['final_values']
         num_configs = settings['execution_plan']['num_configs']
         iterations = settings['execution_plan']['iterations_per_config']
-        #templates = str(settings['template_parameters']['templates']) * int(settings['template_parameters']['template_repetitions'])
+        templates = settings['template_parameters']['templates'] * int(settings['template_parameters']['template_repetitions'])
 
         vitamin = False
         ga = False
@@ -65,6 +66,9 @@ def run_benchmark(settings_path):
                     else:
                         step[key] = start[key]
                 while(current_iter < iterations):
+                    for key in start:
+                        if isinstance(start[key], list):
+                            step[key] = random.randint(start[key][0], start[key][1])
                     # case_dir = Path(str(output_dir)+f'\case{current_iter+1}')
                     # case_dir.mkdir(parents=True, exist_ok=True)
                     model_path = str(output_dir)+f'/cgs.txt'
@@ -79,6 +83,7 @@ def run_benchmark(settings_path):
                         coalition_size=step['coalition_size'],
                         k=step['k'],
                         formula_length=step['set_size'],
+                        templates=templates,
                         cgs_file=model_path,
                         formula_file=formula_path
                     )

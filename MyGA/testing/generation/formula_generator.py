@@ -135,7 +135,7 @@ def generate_template_natatl_formulas(
         random.seed(seed)
 
     if templates is None:
-        templates = ['X','F','G','U']
+        templates = ["G", "F", "X", "U"]
 
     # Generate proposition names
     current_prop = 'p'
@@ -169,19 +169,16 @@ def generate_template_natatl_formulas(
         members_str = ','.join(str(m) for m in sorted(members))
 
         # build sets: each set is homogeneous (only conjunctions OR only disjunctions)
-        if templ == 'U':
+        if templ == 'U' or templ == 'R' or templ == 'W' or templ == 'M':
             left = _build_prop_set(props, set_size, true_ratio, style='disj')
             right = _build_prop_set(props, set_size, true_ratio, style='conj')
-            formula = f"({left}) U ({right})"
+            formula = f"({left}) {templ} ({right})"
         elif templ == 'F':
             left = _build_prop_set(props, set_size, true_ratio, style='conj')
             formula = f"F ({left})"
-        elif templ == 'X':
+        elif templ == 'X' or templ == 'G':
             left = _build_prop_set(props, set_size, true_ratio, style='disj')
-            formula = f"X ({left})"
-        elif templ == 'G':
-            left = _build_prop_set(props, set_size, true_ratio, style='disj')
-            formula = f"G ({left})"
+            formula = f"{templ} ({left})"
         else:
             left = _build_prop_set(props, set_size, true_ratio, style='disj')
             formula = f"{templ}({left})"

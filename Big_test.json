@@ -13,13 +13,13 @@
   },
   
   "start_parameters": {
-    "num_states": 200,
-    "num_agents": 2,
-    "num_agent_actions": 2,
-    "num_aps": 50,
+    "num_states": [10, 20],
+    "num_agents": 4,
+    "num_agent_actions": 4,
+    "num_aps": 10,
     "sparsity": 0.5,
-    "coalition_size": 5,
-    "k": 4,
+    "coalition_size": 2,
+    "k": 2,
     "set_size": 4
   },
 
@@ -28,20 +28,20 @@
     "num_configs": 1,
     "final_values":
     {
-        "fin_num_states": 100,
-        "fin_num_agents": 2,
-        "fin_num_agent_actions": 2,
-        "fin_num_aps": 50,
+        "fin_num_states": 200,
+        "fin_num_agents": 5,
+        "fin_num_agent_actions": 5,
+        "fin_num_aps": 10,
         "fin_sparsity": 0.5,
-        "fin_coalition_size": 5,
-        "fin_k": 4,
+        "fin_coalition_size": 2,
+        "fin_k": 2,
         "fin_set_size": 4
     }
   },
 
-  "plot":{
-    "plot_output": "MyGA/_test_cases/output/benchmark_plot.png",
-    "plot_key": "configuration"
+  "template_parameters":{
+    "templates":["G", "F", "X", "U"],
+    "template_repetitions": 1
   }
 
 }

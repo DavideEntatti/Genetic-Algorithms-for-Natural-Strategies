@@ -12,6 +12,7 @@ def generate_case(
     coalition_size: int | None = None,
     k : int = 3,
     formula_length: int = 2,
+    templates: list[str] | None = None,
     cgs_file: str | Path | None = None,
     formula_file: str | Path | None = None,
     ):
@@ -31,7 +32,8 @@ def generate_case(
             coalition_size=coalition_size,
             k=k,
             num_propositions=num_aps,
-            set_size=formula_length
+            set_size=formula_length,
+            templates=templates
         )
         save_formulas_to_file(natatl_formulas, formula_file)
 
