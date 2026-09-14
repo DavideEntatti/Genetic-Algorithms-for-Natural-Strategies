@@ -68,7 +68,7 @@ def draw_plot(
             [float(row[field]) for row in rows],
             label=field,
             marker="o",
-            linestyle="-" if index % 2 == 0 else "--",
+            linestyle="-" if "winning" in field else "--",
         )
 
     ax1.set_ylabel('Tempo (secondi)', fontweight='bold')
@@ -84,7 +84,7 @@ def draw_plot(
             x_values,
             [float(row[field]) for row in rows],
             label=field,
-            marker="s" if index % 2 == 0 else "x",
+            marker="s" if "wins" in field else "x",
             linestyle=":",
         )
 
@@ -122,6 +122,38 @@ def _draw_distribution(rows, selected, plot_file):
     fig.tight_layout()
     fig.savefig(plot_file)
 
+def draw_fitness_plot(csv_file, plot_file):
+    import matplotlib.pyplot as plt
+    import pandas as pd
+
+    df = pd.read_csv(csv_file)
+    
+    df['Sol'] = df['Sol'].astype(int)
+    
+    grouped = df.groupby('Gen').agg({
+        'Fit': 'mean',
+        'Sol': 'sum'
+    }).reset_index()
+    
+    fig, ax1 = plt.subplots(figsize=(8, 5))
+    
+    color = 'tab:blue'
+    ax1.set_xlabel('Gen (Generazione)')
+    ax1.set_ylabel('Media Fitness', color=color)
+    line1 = ax1.plot(grouped['Gen'], grouped['Fit'], color=color, marker='o', label='Media Fit')
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.grid(True, linestyle=':', alpha=0.6)
+    
+    ax2 = ax1.twinx()  
+    color = 'tab:orange'
+    ax2.set_ylabel('Soluzioni trovate', color=color)
+    line2 = ax2.plot(grouped['Gen'], grouped['Sol'], color=color, marker='s', linestyle='--', label='Somma Sol')
+    ax2.tick_params(axis='y', labelcolor=color)
+    
+    plt.title("Andamento Media Fit e Somma Sol per Generazione")
+    fig.tight_layout()
+
+    fig.savefig(plot_file)
 
 if __name__ == "__main__":
     import argparse
@@ -129,6 +161,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot a benchmark CSV")
     parser.add_argument("csv_file")
     parser.add_argument("plot_file")
+    parser.add_argument('--fitness-plot', action='store_true')
     parser.add_argument("--plot-key", default="configuration")
     parser.add_argument("--plot-type", choices=("line", "distribution"), default="line")
     parser.add_argument(
@@ -136,11 +169,14 @@ if __name__ == "__main__":
         help="Comma-separated CSV result columns; defaults to all available columns",
     )
     args = parser.parse_args()
-    selected_results = args.results.split(",") if args.results else None
-    draw_plot(
-        args.csv_file,
-        args.plot_file,
-        args.plot_key,
-        args.plot_type,
-        selected_results,
-    )
+    if args.fitness_plot:
+        draw_fitness_plot(args.csv_file, args.plot_file)
+    else:
+        selected_results = args.results.split(",") if args.results else None
+        draw_plot(
+            args.csv_file,
+            args.plot_file,
+            args.plot_key,
+            args.plot_type,
+            selected_results,
+        )

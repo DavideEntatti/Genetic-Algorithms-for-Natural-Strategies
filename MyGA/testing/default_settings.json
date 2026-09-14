@@ -7,6 +7,7 @@
   "execution":{
     "ga": 1,
     "vitamin": 1,
+    "mixed": 1,
     "timeout": 5,
     "directory": "MyGA/_test_cases",
     "benchmark_output": "MyGA/_test_cases/output/benchmark_output_prova.csv"

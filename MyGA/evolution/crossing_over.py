@@ -117,6 +117,7 @@ def mutate(cond, aps):
     if node.op == 'NOT':#Se pesco un nodo 'NOT' lo rimuovo
         if parent:
             parent.children[index] = node.children[0]
+            return cond
         else: 
             return node.children[0]
     else:
@@ -136,16 +137,13 @@ def mutate(cond, aps):
                 node.children = [ASTNode('VAR',value=random.choice(aps)), ASTNode('VAR',value=random.choice(aps))]
             elif node.op == 'DUAL':
                 if not parent: #Il nodo radice può essere una costante
-                    node.op = random.choice(['VAR'])
-                else:
                     node.op = 'VAR'
                     node.children.clear()
-                if node.op == 'CONST':
-                    node.value = None
 
         if choice == 1 or choice ==2:#Cambio il valore del nodo
             if node.op == 'VAR':
                 node.value = random.choice(aps)
             elif node.op == 'DUAL':
                 node.value = random.choice(['AND','OR'])
+
     return cond

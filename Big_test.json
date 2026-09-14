@@ -6,42 +6,43 @@
 
   "execution":{
     "ga": 1,
-    "vitamin": 1,
-    "timeout": 5,
+    "vitamin": 0,
+    "mixed": 0,
+    "timeout": 1,
     "directory": "MyGA/_test_cases",
-    "benchmark_output": "MyGA/_test_cases/output/benchmark_output_prova.csv"
+    "benchmark_output": "MyGA/_test_cases/output/benchmark_output.csv"
   },
   
   "start_parameters": {
-    "num_states": [10, 20],
-    "num_agents": 4,
-    "num_agent_actions": 4,
-    "num_aps": 10,
+    "num_states": 100,
+    "num_agents": 5,
+    "num_agent_actions": 5,
+    "num_aps": 25,
     "sparsity": 0.5,
     "coalition_size": 2,
-    "k": 2,
-    "set_size": 4
+    "k": 4,
+    "set_size": 3
   },
 
   "execution_plan": {
-    "iterations_per_config": 1,
-    "num_configs": 1,
+    "iterations_per_config": 10,
+    "num_configs": 10,
     "final_values":
     {
         "fin_num_states": 200,
-        "fin_num_agents": 5,
-        "fin_num_agent_actions": 5,
-        "fin_num_aps": 10,
+        "fin_num_agents": 10,
+        "fin_num_agent_actions": 10,
+        "fin_num_aps": 50,
         "fin_sparsity": 0.5,
-        "fin_coalition_size": 2,
-        "fin_k": 2,
-        "fin_set_size": 4
+        "fin_coalition_size": 4,
+        "fin_k": 8,
+        "fin_set_size": 5
     }
   },
 
   "template_parameters":{
     "templates":["G", "F", "X", "U"],
-    "template_repetitions": 1
+    "template_repetitions": 5
   }
 
 }

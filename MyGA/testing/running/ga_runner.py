@@ -7,6 +7,7 @@ def run_ga(formula, model_path):
         status, res = search_strategy(formula, model_path)
     except Exception as e:                
         res = f'ERROR: {e}'
+        print(e)
         status = None
     if type(res) == str:
         return status, res

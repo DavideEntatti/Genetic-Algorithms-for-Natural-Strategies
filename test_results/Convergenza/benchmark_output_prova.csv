@@ -1,0 +1,2 @@
+configuration,num_states,num_agents,num_agent_actions,num_aps,sparsity,coalition_size,k,set_size,ga_wins,ga_losses,ga_winning_time_avg,ga_losing_time_avg
+1,85,16,6,59,0.747040875228985,3,2,3,16,4,12.051060552812487,0.05599095750039851

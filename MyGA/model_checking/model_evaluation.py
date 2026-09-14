@@ -37,6 +37,8 @@ def evalueate_right(model):
             if is_good[edge.src] and is_good[edge.dst]:
                 d_nodes.add(dst_id)
         n = len(d_nodes)
+        if n == 1:
+            right_paths += 0.2
         if n > 1:
             #n-1 per non tenere conto del cammino corrente
             right_paths += (n-1)
@@ -137,7 +139,9 @@ def evalueate_wrong(model, deadlocks):
             if is_bad[edge.src] and is_bad[edge.dst]:
                 d_nodes.add(dst_id)
         n = len(d_nodes)
-        if n > 1:
+        if n == 1:
+            wrong_paths -= 0.2
+        elif n > 1:
             #n-1 per non tenere conto del cammino corrente
             wrong_paths += (n-1)
     

@@ -1,5 +1,5 @@
 .venv/
-_test_cases/
+_test_cases*/
 __pycache__/
 tests/
 .vscode/

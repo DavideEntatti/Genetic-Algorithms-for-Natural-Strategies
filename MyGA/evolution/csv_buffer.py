@@ -10,8 +10,8 @@ class csv_buffer:
 
     @classmethod
     def write_buffer(self):
-        csv_fields = ["Gen", "Fit", "Sol", "F"]
-        output_path = Path("MyGA/_test_cases/output/generations.csv")
+        csv_fields = ["Gen", "Fit", "Sol"]
+        output_path = Path("MyGA/_test_cases2/output/generations.csv")
         exists = False
         if output_path.exists():
             exists = True
@@ -21,4 +21,4 @@ class csv_buffer:
                 writer.writeheader()
             for row in self.buffer:
                 writer.writerow(row)
-                buffer.clear()
+            self.buffer.clear()
