@@ -25,14 +25,14 @@
   },
 
   "execution_plan": {
-    "iterations_per_config": 10,
-    "num_configs": 6,
+    "iterations_per_config": 5,
+    "num_configs": 7,
     "final_values":
     {
-        "fin_num_states": 9,
+        "fin_num_states": 10,
         "fin_num_agents": 5,
         "fin_num_agent_actions": 5,
-        "fin_num_aps": 5,
+        "fin_num_aps": 7,
         "fin_sparsity": 0.5,
         "fin_coalition_size": 3,
         "fin_k": 1,

@@ -1,11 +1,11 @@
 #Parametri algoritmo genetico
 class config:
     #GENERAZIONE
-    POPULATION_SIZE = 50
-    MAX_GENERATIONS = 50
-    N_ELITE = 10
-    EXTRA_STRATEGIES = 20
-    TOURNAMENT_SIZE = 10
+    POPULATION_SIZE = 30
+    MAX_GENERATIONS = 60
+    N_ELITE = 6
+    EXTRA_STRATEGIES = 6
+    TOURNAMENT_SIZE = 12
     
     #MUTATION
     ORDER_MUTATION = 0.3
@@ -13,10 +13,11 @@ class config:
     CONDITION_MUTATION = 0.3
 
     DYNAMIC_K = 0
+    DYNAMIC_SETTINGS = False
 
     @classmethod
     def set_config(self, pop_size=None, gens=None, elites=None, extras=None,
-                    tournament=None, ord_mut=None, act_mut=None, cond_mut=None, dyn_k=None):
+                    tournament=None, ord_mut=None, act_mut=None, cond_mut=None, dyn_k=None, dyn_set=None):
         
         if pop_size is not None: self.POPULATION_SIZE = pop_size
         if gens is not None: self.MAX_GENERATIONS = gens
@@ -30,6 +31,7 @@ class config:
         if cond_mut is not None: self.CONDITION_MUTATION = cond_mut
 
         if dyn_k is not None: self.DYNAMIC_K = dyn_k
+        if dyn_set is not None: self.DYNAMIC_SETTINGS = dyn_set
 
         if self.N_ELITE + self.EXTRA_STRATEGIES > self.POPULATION_SIZE:
             raise Exception("Invalid GA configuration: N_ELITES + EXTRA_STRATEGIES must be lower than POPULATION_SIZE")

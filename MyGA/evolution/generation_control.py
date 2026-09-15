@@ -10,16 +10,18 @@ from math import sqrt
 import spot
 
 
-def search_strategy(formula, model_path):
+def search_strategy(formula, model_path, save_gens=None):
     cgs, agents_actions, aps = read_CGS(model_path)
     formula, coalition, k = NatATL_formula_info(formula)
 
-    #n = 10*len(coalition)*len(agents_actions[0])
-    # n = 50
-    # pop_size = int(n)
-    # gens = int(n*2)
-    # n_spec = int(pop_size/5)
-    # config.set_config(pop_size=pop_size, gens=gens, elites=n_spec, extras=n_spec, tournament=max(n_spec, 1))
+    if config.DYNAMIC_SETTINGS:
+        n = 10*len(coalition)*len(agents_actions[0])*k
+        n = max(n, 60)
+        #n = 50
+        pop_size = int(n)
+        gens = int(n*2)
+        n_spec = int(pop_size/5)
+        config.set_config(pop_size=pop_size, gens=gens, elites=n_spec, extras=n_spec, tournament=max(n_spec, 1))
 
     b_dict = spot.make_bdd_dict()
     kripke_graph = cgs_to_kripke(cgs, b_dict)
@@ -103,6 +105,7 @@ def search_strategy(formula, model_path):
                             
             avg_denom = max(1, len(population))
             average_fitness = fit_tot/avg_denom
+
 
             row = {"Gen":i,"Fit":average_fitness,"Sol":found_new_solution}
             csv_buffer.add_row(row)

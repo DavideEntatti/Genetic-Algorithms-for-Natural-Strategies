@@ -9,9 +9,9 @@ class csv_buffer:
         self.buffer.append(row)
 
     @classmethod
-    def write_buffer(self):
+    def write_buffer(self, generations_path):
         csv_fields = ["Gen", "Fit", "Sol"]
-        output_path = Path("MyGA/_test_cases2/output/generations.csv")
+        output_path = Path(generations_path)
         exists = False
         if output_path.exists():
             exists = True

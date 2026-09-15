@@ -10,11 +10,11 @@ def vitamin_wrapper(formula, model_path, q):
     status, result = run_vitamin(formula, model_path)
     q.put((status, result))
 
-def ga_wrapper(formula, model_path, q):
-    status, result = run_ga(formula, model_path)
+def ga_wrapper(formula, model_path, q, save_gens=None):
+    status, result = run_ga(formula, model_path, save_gens)
     q.put((status, result))
 
-def run_case(model_path, formula_path, output_path=None, vitamin=True, ga=True, mixed=True, timeout=60):
+def run_case(model_path, formula_path, output_path=None, generations_path=None, vitamin=True, ga=True, mixed=True, timeout=60):
     # Load formulas from the specified file
     formulas = load_natatl_formulas(formula_path)
 
@@ -68,10 +68,11 @@ def run_case(model_path, formula_path, output_path=None, vitamin=True, ga=True, 
 
         if ga:
             t1 = time.perf_counter()
-            ga_status, ga_result = run_ga(formula, model_path)
+            ga_status, ga_result = run_ga(formula, model_path, generations_path)
             t2 = time.perf_counter()
             ga_time = t2 - t1
-            csv_buffer.write_buffer()
+            if generations_path:
+                csv_buffer.write_buffer(generations_path)
         else:
             ga_status, ga_result, ga_time = 'Skipped', None, 0.0
 
@@ -82,7 +83,7 @@ def run_case(model_path, formula_path, output_path=None, vitamin=True, ga=True, 
                 mixed_time = ga_time
                 mixed_result = 'ga'
                 mixed_status = True
-            if ga_status == 'No solution':
+            elif ga_status == 'No solution':
                 mixed_time = ga_time
                 mixed_result = None
                 mixed_status = False
@@ -99,12 +100,6 @@ def run_case(model_path, formula_path, output_path=None, vitamin=True, ga=True, 
 
         mixed_runs.append((mixed_status, mixed_result, mixed_time))
 
-
-        if vitamin_status == True and ga_status != "Found":
-            print(vitamin_result)
-            print(f"Vitamin found a solution but GA did not for formula: {formula}")
-            #raise Exception(f"Vitamin found a solution but GA did not for formula: {formula}")
-
         # Print the results for the current formula
         if output_path:
             with open(output_path, 'a') as f:
@@ -116,6 +111,17 @@ def run_case(model_path, formula_path, output_path=None, vitamin=True, ga=True, 
                 else:
                     f.write(f"GA Status: {ga_status}, Result: {ga_result}, Time: {ga_time:.4f} seconds\n")
                 f.write("\n")
+
+        if vitamin_status == True and ga_status != "Found":
+            print(vitamin_result)
+            #print(f"Vitamin found a solution but GA did not for formula: {formula}")
+            #raise Exception(f"Vitamin found a solution but GA did not for formula: {formula}")
+        
+        if vitamin_status == False and ga_status == "Found":
+            print(ga_result.get_strategy())
+            #print(f"GA found a solution but Vitamin did not for formula: {formula}")
+            #raise Exception(f"GA found a solution but Vitamin did not for formula: {formula}")
+            
         # else:
         #     print(f"Formula: {formula}")
         #     print(f"Vitamin Status: {vitamin_status}, Result: {vitamin_result}, Time: {vitamin_time:.4f} seconds")

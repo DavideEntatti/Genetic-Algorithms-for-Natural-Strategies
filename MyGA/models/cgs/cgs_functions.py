@@ -66,6 +66,9 @@ def prune(cgs: CGS, strategy, coalition):
             else:
                 graph[src_idx][dst_idx] = 0
 
+        if(all(cell == 0 for cell in row)):
+            row[src_idx] = '*'
+
     pruned_cgs.graph = graph
     
     return pruned_cgs

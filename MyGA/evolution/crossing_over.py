@@ -86,20 +86,15 @@ def make_child(parent1, parent2, agents_actions, aps, k):
                 child_strat.agents[i].add_rule(Strategy.copy_rule(rule))
     
     #Controllo per k e aggiungo default alla fine della riproduzione
-    # Ensure we don't loop forever if there are no non-default rules to remove
-    safety_counter = 0
     while child_strat.get_k() > k:
         # collect removable (non-default) rules
         complex_agents = [ag for ag in child_strat.agents if ag.get_k() > k]
-        removable = [(ag, r) for ag in complex_agents for r in ag.rules if not Agent.equal_rules(r, Agent.default())]
+        removable = [(ag, r) for ag in complex_agents for r in ag.rules[:-1]]
         if not removable:
             # nothing to remove, break to avoid infinite loop
             break
         ag, rule = random.choice(removable)
         ag.rules.remove(rule)
-        safety_counter += 1
-        if safety_counter > 1000:
-            break
 
     return child_strat
 

@@ -1,10 +1,10 @@
 from MyGA.evolution.generation_control import search_strategy
 
-def run_ga(formula, model_path):
+def run_ga(formula, model_path, generations_path=None):
     #Run the Genetic Algorithm
     res = None
     try:
-        status, res = search_strategy(formula, model_path)
+        status, res = search_strategy(formula, model_path, generations_path)
     except Exception as e:                
         res = f'ERROR: {e}'
         print(e)

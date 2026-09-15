@@ -12,7 +12,9 @@ def run_benchmark(settings_path):
         settings = json.load(f)
 
         start = settings['start_parameters']
-        final = settings['execution_plan']['final_values']
+        final = None
+        if "final_values" in settings['execution_plan']:
+            final = settings['execution_plan']['final_values']
         num_configs = settings['execution_plan']['num_configs']
         iterations = settings['execution_plan']['iterations_per_config']
         templates = settings['template_parameters']['templates'] * int(settings['template_parameters']['template_repetitions'])
@@ -28,6 +30,12 @@ def run_benchmark(settings_path):
             mixed = True
         timeout = settings['execution']['timeout']
         benchmark_output_path = settings['execution']['benchmark_output']
+        cases_output = None
+        if 'cases_output' in settings['execution']:
+            cases_output = settings['execution']['cases_output']
+        generations_output = None
+        if 'generations_output' in settings['execution']:
+            generations_output = settings['execution']['generations_output']
         output_dir = settings['execution']['directory']
         #output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -70,6 +78,7 @@ def run_benchmark(settings_path):
                     else:
                         step[key] = start[key]
                 while(current_iter < iterations):
+                    print("new iter")
                     for key in start:
                         if isinstance(start[key], list):
                             if isinstance(start[key][0], float) or isinstance(start[key][1], float):
@@ -94,7 +103,10 @@ def run_benchmark(settings_path):
                         cgs_file=model_path,
                         formula_file=formula_path
                     )
-                    runs = run_case(model_path, formula_path, vitamin=vitamin, ga=ga, mixed=mixed, timeout=timeout)
+                    runs = run_case(
+                        model_path, formula_path, vitamin=vitamin, ga=ga, mixed=mixed, timeout=timeout,
+                        output_path=cases_output, generations_path=generations_output
+                    )
                     if vitamin:
                         algorithm_runs["vitamin"].extend(runs["vitamin"])
                     if ga:

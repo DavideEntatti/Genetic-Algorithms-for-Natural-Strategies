@@ -76,7 +76,7 @@ def generate_random_cgs(
         current_action = chr(ord(current_action)+1)
         i+=1
 
-    idle_joint = AGENT_ACTION_SEPARATOR.join(idle_token for _ in range(num_agents))
+    idle_joint = ''.join(idle_token for _ in range(num_agents))
 
     def sample_joint_actions(sample_size: int) -> list[str]:
         """Sample distinct joint actions without materializing the product."""
@@ -92,7 +92,7 @@ def generate_random_cgs(
             for _ in range(num_agents):
                 rank, action_index = divmod(rank, action_count)
                 tokens.append(agent_actions[action_index])
-            sampled.append(AGENT_ACTION_SEPARATOR.join(reversed(tokens)))
+            sampled.append(''.join(reversed(tokens)))
         return sampled
     
     transitions = []
@@ -105,6 +105,20 @@ def generate_random_cgs(
         for joint in row_joints:
             dst = random.randint(0, num_states - 1)
             joints_destinations[dst].append(joint)
+
+        # for agent in range(num_agents):
+        #     for action in agent_actions:
+        #         if action == 'I':
+        #             continue
+        #         missing=True
+        #         for joint in row_joints:
+        #             if joint[agent] == action:
+        #                 missing = False
+        #                 break
+        #         if missing:
+        #             new_joint = 'I'*agent + action + 'I'*(num_agents-agent-1)
+        #             joints_destinations[src].append(new_joint)
+
         for dst in range(num_states):
             if joints_destinations[dst]:
                 row.append(JOINT_CHOICE_SEPARATOR.join(joints_destinations[dst]))
