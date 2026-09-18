@@ -173,143 +173,131 @@ with tab1:
                 components.html(f.read(), height=600)
 
 with tab2:
-    # # --- AUTO-REFRESH SE CI SONO PROCESSI ATTIVI ---
-    # if st.session_state['running_processes']:
-    #     # Controlla se ci sono ancora processi vivi
-    #     any_alive = False
-    #     for p_id, proc in list(st.session_state['running_processes'].items()):
-    #         if proc.is_alive():
-    #             any_alive = True
-    #         else:
-    #             # Pulizia se è finito naturalmente
-    #             del st.session_state['running_processes'][p_id]
-        
-    #     if any_alive:
-    #         import time
-    #         time.sleep(20)  # Aspetta 1.5 secondi
-    #         st.rerun()
     st.subheader("Benchmarking Management")
     
     bench_col_left, bench_col_mid, bench_col_right = st.columns([1.2, 1, 1.2])
     
     with bench_col_left:
-        st.markdown("### 📊 Benchmark Profiles")
-        
-        if st.button("➕ Add New Benchmark Profile", type="primary", use_container_width=True):
-            add_profile_dialog()
+        @st.fragment(run_every=1.0) # Si auto-aggiorna ogni 1 secondo finché ci sono processi attivi
+        def render_profiles_manager():
+            st.markdown("### 📊 Benchmark Profiles")
+            
+            if st.button("➕ Add New Benchmark Profile", type="primary", use_container_width=True):
+                add_profile_dialog()
 
-        st.write("")
-        
-        scrollable_container = st.container(height=500)
-        with scrollable_container:
-            if not st.session_state['benchmark_profiles']:
-                st.info("No benchmark profiles available. Click 'Add New Benchmark Profile' to create one.")
-            else:
-                for profile in st.session_state['benchmark_profiles']:
-                    p_id = profile['id']
-                    
-                    # Controlliamo se il processo per questo profilo è attualmente in vita
-                    is_running = False
-                    if p_id in st.session_state['running_processes']:
-                        proc = st.session_state['running_processes'][p_id]
-                        if proc.is_alive():
-                            is_running = True
-                        else:
-                            # Il processo è terminato, lo rimuoviamo dalla memoria attiva
-                            del st.session_state['running_processes'][p_id]
-
-                    with st.container(border=True):
-                        st.markdown(f"**{profile['name']}**")
-                        if is_running:
-                            st.markdown("🔴 **Status: Running...**")
-                        else:
-                            st.caption(f"{profile['description']}")
+            st.write("")
+            
+            scrollable_container = st.container(height=500)
+            with scrollable_container:
+                if not st.session_state['benchmark_profiles']:
+                    st.info("No benchmark profiles available. Click 'Add New Benchmark Profile' to create one.")
+                else:
+                    for profile in st.session_state['benchmark_profiles']:
+                        p_id = profile['id']
                         
-                        col_run, col_edit, col_dl, col_del = st.columns([1, 1, 1, 1])
-                        
-                        with col_run:
-                            if not is_running:
-                                if st.button("▶️ Run", key=f"run_{p_id}", use_container_width=True):
-                                    settings_file = str(Path(temp_path) / f"profile_{p_id}" / "settings.json")
-                                    def _target_run_benchmark(settings_path):
-                                        run_benchmark(settings_path)
-                                    
-                                    # Avvio con multiprocessing
-                                    p = multiprocessing.Process(target=_target_run_benchmark, args=(settings_file,))
-                                    p.start()
-                                    st.session_state['running_processes'][p_id] = p
-                                    
-                                    st.toast(f"Started benchmark: {profile['name']}")
-                                    st.rerun()
+                        # Controlliamo se il processo per questo profilo è attualmente in vita
+                        is_running = False
+                        if p_id in st.session_state['running_processes']:
+                            proc = st.session_state['running_processes'][p_id]
+                            if proc.is_alive():
+                                is_running = True
                             else:
-                                if st.button("⏹️ Stop", key=f"stop_{p_id}", type="primary", use_container_width=True):
-                                    try:
-                                        parent = psutil.Process(proc.pid)
-                                        children = parent.children(recursive=True)
+                                # Il processo è terminato, lo rimuoviamo dalla memoria attiva
+                                del st.session_state['running_processes'][p_id]
+
+                        with st.container(border=True):
+                            st.markdown(f"**{profile['name']}**")
+                            if is_running:
+                                st.markdown("🔴 **Status: Running...**")
+                            else:
+                                st.caption(f"{profile['description']}")
+                            
+                            col_run, col_edit, col_dl, col_del = st.columns([1, 1, 1, 1])
+                            
+                            with col_run:
+                                if not is_running:
+                                    if st.button("▶️ Run", key=f"run_{p_id}", use_container_width=True):
+                                        settings_file = str(Path(temp_path) / f"profile_{p_id}" / "settings.json")
+                                        def _target_run_benchmark(settings_path):
+                                            run_benchmark(settings_path)
                                         
-                                        for child in children:
-                                            child.terminate()
+                                        # Avvio con multiprocessing
+                                        p = multiprocessing.Process(target=_target_run_benchmark, args=(settings_file,))
+                                        p.start()
+                                        st.session_state['running_processes'][p_id] = p
                                         
-                                        parent.terminate()
-                                        
-                                        # Diamo un attimo per chiudersi pacificamente, altrimenti killiamo
-                                        gone, alive = psutil.wait_procs(children + [parent], timeout=3)
-                                        for p_alive in alive:
-                                            p_alive.kill()
+                                        st.toast(f"Started benchmark: {profile['name']}")
+                                        st.rerun()
+                                else:
+                                    if st.button("⏹️ Stop", key=f"stop_{p_id}", type="primary", use_container_width=True):
+                                        try:
+                                            parent = psutil.Process(proc.pid)
+                                            children = parent.children(recursive=True)
                                             
-                                    except psutil.NoSuchProcess:
-                                        pass
-                                    except Exception as e:
-                                        # Fallback sul metodo standard se psutil fallisce
-                                        proc.terminate()
-                                        proc.join()
-                                    
-                                    if p_id in st.session_state['running_processes']:
-                                        del st.session_state['running_processes'][p_id]
-                                    
-                                    st.toast(f"Stopped benchmark: {profile['name']}")
-                                    st.rerun()
+                                            for child in children:
+                                                child.terminate()
+                                            
+                                            parent.terminate()
+                                            
+                                            # Diamo un attimo per chiudersi pacificamente, altrimenti killiamo
+                                            gone, alive = psutil.wait_procs(children + [parent], timeout=3)
+                                            for p_alive in alive:
+                                                p_alive.kill()
+                                                
+                                        except psutil.NoSuchProcess:
+                                            pass
+                                        except Exception as e:
+                                            # Fallback sul metodo standard se psutil fallisce
+                                            proc.terminate()
+                                            proc.join()
+                                        
+                                        if p_id in st.session_state['running_processes']:
+                                            del st.session_state['running_processes'][p_id]
+                                        
+                                        st.toast(f"Stopped benchmark: {profile['name']}")
+                                        st.rerun()
 
-                        with col_edit:
-                            if not is_running:
-                                if st.button("✏️ Edit", key=f"edit_{p_id}", use_container_width=True):
-                                    edit_profile_dialog(p_id)
-                            else:
-                                st.button("✏️ Edit", key=f"edit_{p_id}", use_container_width=True, disabled=True)
+                            with col_edit:
+                                if not is_running:
+                                    if st.button("✏️ Edit", key=f"edit_{p_id}", use_container_width=True):
+                                        edit_profile_dialog(p_id)
+                                else:
+                                    st.button("✏️ Edit", key=f"edit_{p_id}", use_container_width=True, disabled=True)
 
-                        with col_dl:
-                            folder_path = Path(temp_path) / profile['folder_name']
-                            if folder_path.exists():
-                                zip_data = zip_folder(folder_path)
-                                safe_filename = "".join(c for c in profile['name'] if c.isalnum() or c in (' ', '_', '-')).strip().replace(' ', '_')
-                                st.download_button(
-                                    label="📥 Download",
-                                    data=zip_data,
-                                    file_name=f"{safe_filename}.zip",
-                                    mime="application/zip",
-                                    key=f"dl_{p_id}",
-                                    use_container_width=True,
-                                    help="Download profile folder"
-                                )
+                            with col_dl:
+                                folder_path = Path(temp_path) / profile['folder_name']
+                                if folder_path.exists():
+                                    zip_data = zip_folder(folder_path)
+                                    safe_filename = "".join(c for c in profile['name'] if c.isalnum() or c in (' ', '_', '-')).strip().replace(' ', '_')
+                                    st.download_button(
+                                        label="📥 Download",
+                                        data=zip_data,
+                                        file_name=f"{safe_filename}.zip",
+                                        mime="application/zip",
+                                        key=f"dl_{p_id}",
+                                        use_container_width=True,
+                                        help="Download profile folder"
+                                    )
 
-                        with col_del:
-                            if not is_running:
-                                if st.button("🗑️", key=f"del_{p_id}", use_container_width=True, help="Delete profile"):
-                                    folder_to_delete = Path(temp_path) / profile['folder_name']
-                                    if folder_to_delete.exists():
-                                        shutil.rmtree(folder_to_delete)
-                                    st.session_state['benchmark_profiles'] = load_benchmark_profiles()
-                                    st.success(f"Deleted profile '{profile['name']}'")
-                                    st.rerun()
-                            else:
-                                st.button("🗑️", key=f"del_{p_id}", use_container_width=True, disabled=True, help="Cannot delete while running")
+                            with col_del:
+                                if not is_running:
+                                    if st.button("🗑️", key=f"del_{p_id}", use_container_width=True, help="Delete profile"):
+                                        folder_to_delete = Path(temp_path) / profile['folder_name']
+                                        if folder_to_delete.exists():
+                                            shutil.rmtree(folder_to_delete)
+                                        st.session_state['benchmark_profiles'] = load_benchmark_profiles()
+                                        st.success(f"Deleted profile '{profile['name']}'")
+                                        st.rerun()
+                                else:
+                                    st.button("🗑️", key=f"del_{p_id}", use_container_width=True, disabled=True, help="Cannot delete while running")
 
-        # Mostriamo quanti processi sono in esecuzione in tempo reale
-        active_count = len(st.session_state['running_processes'])
-        if active_count > 0:
-            st.warning(f"⚠️ {active_count} benchmark process(es) currently running in background.")
-        else:
-            st.info("No active benchmark processes.")
+            # Mostriamo quanti processi sono in esecuzione in tempo reale
+            active_count = len(st.session_state['running_processes'])
+            if active_count > 0:
+                st.warning(f"⚠️ {active_count} benchmark process(es) currently running in background.")
+            else:
+                st.info("No active benchmark processes.")
+        render_profiles_manager()
 
     with bench_col_mid:
         st.subheader("Plot Settings")
