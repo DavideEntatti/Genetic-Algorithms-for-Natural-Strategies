@@ -5,23 +5,22 @@ from MyGA.evolution.crossing_over import new_population, new_generation
 from MyGA.models.cgs.cgs_functions import prune, cgs_to_kripke, complete, read_CGS
 from MyGA.models.formula.fromula_functions import NatATL_formula_info
 from MyGA.config import config
-from MyGA.evolution.csv_buffer import csv_buffer
 from math import sqrt
 import spot
 
 
-def search_strategy(formula, model_path, save_gens=None):
+def search_strategy(formula, model_path, csv_buffer=None):
     cgs, agents_actions, aps = read_CGS(model_path)
     formula, coalition, k = NatATL_formula_info(formula)
 
     if config.DYNAMIC_SETTINGS:
-        n = 10*len(coalition)*len(agents_actions[0])*k
-        n = max(n, 60)
+        n = 8*len(coalition)*len(agents_actions[0])*k
+        n = max(n, 80)
         #n = 50
         pop_size = int(n)
-        gens = int(n*2)
+        gens = int(n)
         n_spec = int(pop_size/5)
-        config.set_config(pop_size=pop_size, gens=gens, elites=n_spec, extras=n_spec, tournament=max(n_spec, 1))
+        config.set_config(pop_size=pop_size, gens=gens, elites=n_spec, extras=n_spec, tournament=max(n_spec*2, 1))
 
     b_dict = spot.make_bdd_dict()
     kripke_graph = cgs_to_kripke(cgs, b_dict)
@@ -106,9 +105,9 @@ def search_strategy(formula, model_path, save_gens=None):
             avg_denom = max(1, len(population))
             average_fitness = fit_tot/avg_denom
 
-
-            row = {"Gen":i,"Fit":average_fitness,"Sol":found_new_solution}
-            csv_buffer.add_row(row)
+            if csv_buffer:
+                row = {"Gen":i,"Fit":average_fitness,"Sol":found_new_solution}
+                csv_buffer.add_row(row)
 
             if found_new_solution:
                 break

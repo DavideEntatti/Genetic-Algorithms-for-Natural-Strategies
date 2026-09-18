@@ -1,3 +1,4 @@
+from pathlib import Path
 #Parametri algoritmo genetico
 class config:
     #GENERAZIONE
@@ -13,7 +14,7 @@ class config:
     CONDITION_MUTATION = 0.3
 
     DYNAMIC_K = 0
-    DYNAMIC_SETTINGS = False
+    DYNAMIC_SETTINGS = True
 
     @classmethod
     def set_config(self, pop_size=None, gens=None, elites=None, extras=None,
@@ -35,3 +36,17 @@ class config:
 
         if self.N_ELITE + self.EXTRA_STRATEGIES > self.POPULATION_SIZE:
             raise Exception("Invalid GA configuration: N_ELITES + EXTRA_STRATEGIES must be lower than POPULATION_SIZE")
+
+    @classmethod
+    def save_config(self, path):
+        with open(path, 'w') as file:
+            file.write(str(self.POPULATION_SIZE)+' ')
+            file.write(str(self.MAX_GENERATIONS)+' ')
+            file.write(str(self.N_ELITE)+' ')
+            file.write(str(self.EXTRA_STRATEGIES)+' ')
+            file.write(str(self.TOURNAMENT_SIZE)+' ')
+            file.write(str(self.ORDER_MUTATION)+' ')
+            file.write(str(self.ACTION_MUTATION)+' ')
+            file.write(str(self.CONDITION_MUTATION)+' ')
+            file.write(str(self.DYNAMIC_K)+' ')
+            file.write(str(self.DYNAMIC_SETTINGS)+' ')

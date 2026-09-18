@@ -4,23 +4,28 @@ from datetime import datetime
 from MyGA.testing.running.vitamin_runner import run_vitamin
 from MyGA.testing.running.ga_runner import run_ga
 from MyGA.models.formula.fromula_functions import load_natatl_formulas
-from MyGA.evolution.csv_buffer import csv_buffer
+from MyGA.evolution.csv_buffer import CSV_buffer
 
 def vitamin_wrapper(formula, model_path, q):
     status, result = run_vitamin(formula, model_path)
     q.put((status, result))
 
-def ga_wrapper(formula, model_path, q, save_gens=None):
-    status, result = run_ga(formula, model_path, save_gens)
+def ga_wrapper(formula, model_path, q, csv_buffer=None):
+    status, result = run_ga(formula, model_path, csv_buffer)
     q.put((status, result))
 
-def run_case(model_path, formula_path, output_path=None, generations_path=None, vitamin=True, ga=True, mixed=True, timeout=60):
+def run_case(model_path, formula_path, output_path=None, csv_path=None, vitamin=True, ga=True, mixed=True, timeout=60):
     # Load formulas from the specified file
     formulas = load_natatl_formulas(formula_path)
 
     vitamin_runs = []
     ga_runs = []
     mixed_runs = []
+
+    if csv_path:
+        csv_buffer = CSV_buffer(csv_path)
+    else:
+        csv_buffer = None
 
     if output_path:
         with open(output_path, 'a') as f:
@@ -48,33 +53,33 @@ def run_case(model_path, formula_path, output_path=None, generations_path=None, 
 
         vitamin_runs.append((vitamin_status, vitamin_result, vitamin_time))
 
-        # if ga:
-        #     q = Queue()
-        #     p = Process(target=ga_wrapper, args=(formula, model_path, q))
-        #     t1 = time.perf_counter()
-        #     p.start()
-        #     p.join(timeout=timeout)
-        #     if p.is_alive():
-        #         p.terminate()  # Forza la chiusura
-        #         p.join()
-        #         ga_status, ga_result = 'Timeout', None
-        #     else:
-        #         ga_status, ga_result = q.get()
-        #     t2 = time.perf_counter()
-        #     csv_buffer.write_buffer()
-        #     ga_time = t2 - t1
-        # else:
-        #     ga_status, ga_result, ga_time = 'Skipped', None, 0.0
+        if not csv_path:
+            if ga:
+                q = Queue()
+                p = Process(target=ga_wrapper, args=(formula, model_path, q, csv_buffer))
+                t1 = time.perf_counter()
+                p.start()
+                p.join(timeout=timeout)
+                if p.is_alive():
+                    p.terminate()  # Forza la chiusura
+                    p.join()
+                    ga_status, ga_result = 'Timeout', None
+                else:
+                    ga_status, ga_result = q.get()
+                t2 = time.perf_counter()
+                ga_time = t2 - t1
+            else:
+                ga_status, ga_result, ga_time = 'Skipped', None, 0.0
 
-        if ga:
-            t1 = time.perf_counter()
-            ga_status, ga_result = run_ga(formula, model_path, generations_path)
-            t2 = time.perf_counter()
-            ga_time = t2 - t1
-            if generations_path:
-                csv_buffer.write_buffer(generations_path)
         else:
-            ga_status, ga_result, ga_time = 'Skipped', None, 0.0
+            if ga:
+                t1 = time.perf_counter()
+                ga_status, ga_result = run_ga(formula, model_path, csv_buffer)
+                t2 = time.perf_counter()
+                ga_time = t2 - t1
+                csv_buffer.write_buffer()
+            else:
+                ga_status, ga_result, ga_time = 'Skipped', None, 0.0
 
         ga_runs.append((ga_status, ga_result, ga_time))
 
@@ -112,13 +117,13 @@ def run_case(model_path, formula_path, output_path=None, generations_path=None, 
                     f.write(f"GA Status: {ga_status}, Result: {ga_result}, Time: {ga_time:.4f} seconds\n")
                 f.write("\n")
 
-        if vitamin_status == True and ga_status != "Found":
-            print(vitamin_result)
+        #if vitamin_status == True and ga_status != "Found":
+            #print(vitamin_result)
             #print(f"Vitamin found a solution but GA did not for formula: {formula}")
             #raise Exception(f"Vitamin found a solution but GA did not for formula: {formula}")
         
-        if vitamin_status == False and ga_status == "Found":
-            print(ga_result.get_strategy())
+        #if vitamin_status == False and ga_status == "Found":
+            #print(ga_result.get_strategy())
             #print(f"GA found a solution but Vitamin did not for formula: {formula}")
             #raise Exception(f"GA found a solution but Vitamin did not for formula: {formula}")
             

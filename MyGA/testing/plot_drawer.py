@@ -1,5 +1,14 @@
 import csv
 
+def _available_keys(rows):
+    results = _available_results(rows)
+    if not rows:
+        return []
+    keys = []
+    for column in rows[0]:
+        if not column in results:
+            keys.append(column)
+    return keys
 
 def _available_results(rows):
     """Return result columns that exist and contain at least one numeric value."""
@@ -41,21 +50,35 @@ def draw_plot(
     with open(csv_file, newline="") as source:
         rows = list(csv.DictReader(source))
 
-    if not rows:
-        raise ValueError("The benchmark CSV does not contain any configurations")
-    if plot_key not in rows[0]:
-        raise ValueError(f"Unknown plot key: {plot_key}")
+    if not rows or not rows[1]:
+        raise ValueError(F"The benchmark CSV does not contain any configurations {csv_file}")
+    if plot_key not in rows[0] and plot_type != "fitness":
+        raise ValueError(f"Unknown plot key:{plot_key}")
 
-    selected = _selected_results(rows, results)
-    if not selected:
-        raise ValueError("The CSV does not contain any selected result")
+    if plot_type != 'fitness':
+        selected = _selected_results(rows, results)
+        if not selected:
+            raise ValueError("The CSV does not contain any selected result")
 
-    if plot_type not in {"line", "distribution"}:
-        raise ValueError("plot_type must be 'line' or 'distribution'")
+    if plot_type not in {"line", "distribution", "fitness"}:
+        raise ValueError("Invalid plot_type")
 
-    if plot_type == "distribution":
+    if plot_type == "line":
+        _draw_line_plot(rows, selected, plot_file, plot_key, results,)
+    elif plot_type == "distribution":
         _draw_distribution(rows, selected, plot_file)
-        return
+    elif plot_type == "fitness":
+        _draw_fitness_plot(csv_file, plot_file)
+    return
+
+def _draw_line_plot(
+    rows,
+    selected,
+    plot_file,
+    plot_key="configuration",
+    results=None,
+):
+    import matplotlib.pyplot as plt
 
     x_values = [float(row[plot_key]) for row in rows]
     fig, ax1 = plt.subplots()
@@ -102,6 +125,7 @@ def draw_plot(
 
 def _draw_distribution(rows, selected, plot_file):
     import matplotlib.pyplot as plt
+    import statistics
 
     fig, ax = plt.subplots()
     for field in selected:
@@ -122,7 +146,7 @@ def _draw_distribution(rows, selected, plot_file):
     fig.tight_layout()
     fig.savefig(plot_file)
 
-def draw_fitness_plot(csv_file, plot_file):
+def _draw_fitness_plot(csv_file, plot_file):
     import matplotlib.pyplot as plt
     import pandas as pd
 
@@ -155,28 +179,32 @@ def draw_fitness_plot(csv_file, plot_file):
 
     fig.savefig(plot_file)
 
+def get_keys_and_results(csv_file):
+    with open(csv_file, newline="") as source:
+        rows = list(csv.DictReader(source))
+    
+    return {"keys": _available_keys(rows), "results": _available_results(rows)}
+
+
+
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Plot a benchmark CSV")
     parser.add_argument("csv_file")
     parser.add_argument("plot_file")
-    parser.add_argument('--fitness-plot', action='store_true')
     parser.add_argument("--plot-key", default="configuration")
-    parser.add_argument("--plot-type", choices=("line", "distribution"), default="line")
+    parser.add_argument("--plot-type", choices=("line", "distribution", "fitness"), default="line")
     parser.add_argument(
         "--results",
         help="Comma-separated CSV result columns; defaults to all available columns",
     )
     args = parser.parse_args()
-    if args.fitness_plot:
-        draw_fitness_plot(args.csv_file, args.plot_file)
-    else:
-        selected_results = args.results.split(",") if args.results else None
-        draw_plot(
-            args.csv_file,
-            args.plot_file,
-            args.plot_key,
-            args.plot_type,
-            selected_results,
-        )
+    selected_results = args.results.split(",") if args.results else None
+    draw_plot(
+        args.csv_file,
+        args.plot_file,
+        args.plot_key,
+        args.plot_type,
+        selected_results,
+    )
