@@ -5,7 +5,6 @@ from datetime import datetime
 from MyGA.testing.running.vitamin_runner import run_vitamin
 from MyGA.testing.running.ga_runner import run_ga
 from MyGA.models.formula.fromula_functions import load_natatl_formulas
-from MyGA.evolution.csv_buffer import CSV_buffer
 
 def vitamin_wrapper(formula, model_path, q):
     status, result = run_vitamin(formula, model_path)
@@ -15,18 +14,13 @@ def ga_wrapper(formula, model_path, q, csv_buffer=None):
     status, result = run_ga(formula, model_path, csv_buffer)
     q.put((status, result))
 
-def run_case(model_path, formula_path, output_path=None, csv_path=None, vitamin=True, ga=True, mixed=True, timeout=60):
+def run_case(model_path, formula_path, output_path=None, csv_buffer=None, vitamin=True, ga=True, mixed=True, timeout=60):
     # Load formulas from the specified file
     formulas = load_natatl_formulas(formula_path)
 
     vitamin_runs = []
     ga_runs = []
     mixed_runs = []
-
-    if csv_path:
-        csv_buffer = CSV_buffer(csv_path)
-    else:
-        csv_buffer = None
 
     if output_path:
         with open(output_path, 'a') as f:
@@ -61,7 +55,7 @@ def run_case(model_path, formula_path, output_path=None, csv_path=None, vitamin=
 
         vitamin_runs.append((vitamin_status, vitamin_result, vitamin_time))
 
-        if not csv_path:
+        if not csv_buffer:
             if ga:
                 q = Queue()
                 p = Process(target=ga_wrapper, args=(formula, model_path, q, csv_buffer))

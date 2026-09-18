@@ -68,22 +68,22 @@ def make_child(parent1, parent2, agents_actions, aps, k):
         half1 = len(p1_rules) // 2
         half2 = len(p2_rules) // 2
         rules += p1_rules[:half1] + p2_rules[half2:]
+        rules = [Strategy.copy_rule(r) for r in rules]
 
         if(rules):
-            #eseguo le mutazioni
-            if random.random()>config.ORDER_MUTATION and len(rules)>2:
-                rule = rules.pop(random.randrange(0,len(rules)-1))
-                rules.insert(random.randrange(0,len(rules)-1),rule)
+            if random.random() < config.ORDER_MUTATION and len(rules) > 1:
+                rule = rules.pop(random.randrange(len(rules)))
+                rules.insert(random.randrange(len(rules) + 1), rule)
 
-            for r in range(len(rules)-1):
-                if random.random()>config.ACTION_MUTATION:
+            for r in range(len(rules)):
+                if random.random() < config.ACTION_MUTATION:
                     actions = agents_actions[i]
                     rules[r] = (rules[r][0].copy(), random.choice(actions))
-                if random.random()>config.CONDITION_MUTATION:
-                    rules[r] = (mutate(rules[r][0],aps), rules[r][1])
+                if random.random() < config.CONDITION_MUTATION:
+                    rules[r] = (mutate(rules[r][0], aps), rules[r][1])
             
             for rule in rules:
-                child_strat.agents[i].add_rule(Strategy.copy_rule(rule))
+                child_strat.agents[i].add_rule(rule)
     
     #Controllo per k e aggiungo default alla fine della riproduzione
     while child_strat.get_k() > k:

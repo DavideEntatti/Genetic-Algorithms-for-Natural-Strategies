@@ -1,3 +1,4 @@
+from collections import deque
 import spot
 
 # def evaluate(wrong_model, right_model, deadlocks):
@@ -5,136 +6,97 @@ import spot
 
 def evalueate_right(model):
     mapping = model.get_product_states()
+    num_states = model.num_states()
     sccs = spot.scc_info(model)
-    is_good = [sccs.is_accepting_scc(sccs.scc_of(i)) for i in range(model.num_states())]
+    is_good = [sccs.is_accepting_scc(sccs.scc_of(i)) for i in range(num_states)]
 
     changed = True
     while changed:
         changed = False
-        for s in range(model.num_states()):
+        for s in range(num_states):
             if not is_good[s]:
                 if all(is_good[edge.dst] for edge in model.out(s)):
                     changed = True
                     is_good[s] = True
 
     right_paths = 0
-    # for s in range(model.num_states()):
-    BFS_Queue = [model.get_init_state_number()]
-    visited = []
+    init_state = model.get_init_state_number()
+    BFS_Queue = deque([init_state])
+    enqueued = {init_state}
+    visited = set()
     while BFS_Queue:
-        s = BFS_Queue.pop(0)
-        visited.append(s)
-    #     # Uso un set perchè nel prodotto gli archi possono comparire più volte
+        s = BFS_Queue.popleft()
+        visited.add(s)
         d_nodes = set()
 
         for edge in model.out(s):
-            # Uso dst_id per il nodo del cgs, mentre uso edge.dst per lo stato del prodotto
-            #src_id = mapping[edge.src][0]
             if edge.dst in visited:
                 continue
-            BFS_Queue.append(edge.dst)
+            if edge.dst not in enqueued:
+                enqueued.add(edge.dst)
+                BFS_Queue.append(edge.dst)
             dst_id = mapping[edge.dst][0]
             if is_good[edge.src] and is_good[edge.dst]:
                 d_nodes.add(dst_id)
         n = len(d_nodes)
         if n == 1:
             right_paths += 0.2
-        if n > 1:
+        elif n > 1:
             #n-1 per non tenere conto del cammino corrente
             right_paths += (n-1)
     
     #Aggiunto per tutte le strategie soddisfacienti
-    if is_good[model.get_init_state_number()]:
+    if is_good[init_state]:
         right_paths += 1
 
     return right_paths
 
 def evalueate_wrong(model, deadlocks):
-    # Ottnego gli stati del grafo kripke a cui corrispondono gli stati del prodotto
+    # Ottengo gli stati del grafo kripke a cui corrispondono gli stati del prodotto
     mapping = model.get_product_states()
-
-    # if model.is_empty():
-    #     return 0
+    num_states = model.num_states()
 
     # Vengono segnati come "bad" gli stati che fanno parte di una SCC accettante
     sccs = spot.scc_info(model)
-    # `sccs.is_accepting_scc` prende un indice di SCC, non di stato. Qui mappiamo
-    # ogni stato al suo indice di SCC tramite `sccs.scc_of(state)`.
+    is_bad = [sccs.is_accepting_scc(sccs.scc_of(i)) for i in range(num_states)]
 
-    #with open("sccs.txt", "w") as f:
-    #     f.write("ALL TRANSITIONS")
-    #     for s in range(model.num_states()):
-    #         f.write(f"\nSTATE: {s}, MAPPING: {mapping[s][0]},{mapping[s][1]}\n")
-    #         for out in model.out(s):
-    #             f.write(f"{out.dst}, ")
-
-    #f.write("\n")
-    is_bad = [sccs.is_accepting_scc(sccs.scc_of(i)) for i in range(model.num_states())]
-
-    # for s in range(model.num_states()):
-    #     f.write(f"State {s}: SCC {sccs.scc_of(s)}, Accepting: {is_bad[s]}\n")
-
-    # for s in range(model.num_states()):
-    #     if s == mapping[s][0]:  # Solo gli stati del CGS
-    #         has_out = any(True for _ in model.out(s))
-    #         if not has_out:
-    #             is_bad[s] = True
-    #             for p in range(model.num_states()):
-    #                 if mapping[p][0] == s:
-    #                     is_bad[p] = True  # Stati del CGS in altri stati del prodotto
-
-    # for s in range(model.num_states()):
-    #     if is_bad[s]:
-    #         f.write(f"State {s} is bad after scc control\n")
-
-    for d in deadlocks:
-        for s in range(model.num_states()):
-            if mapping[s][0] == d:
+    deadlocks_set = set(deadlocks)
+    if deadlocks_set:
+        for s in range(num_states):
+            if mapping[s][0] in deadlocks_set:
                 is_bad[s] = True
-                #f.write(f"State {s} is bad because of recognised deadlock in CGS state {d}\n")
-                # if s in deadlocks:
-                #     for p in range(model.num_states()):
-                #         if mapping[p][0] == s:
-                #             is_bad[p] = True
-                #             f.write(f"State {p} is bad because of recognised deadlock in CGS state {s}\n")
 
-    #Tutti sli stati che portano verso uno stato "bad" vengono segnati come "bad"
-    changed = True
-    while changed:
-        changed = False
-        for s in range(model.num_states()):
-            if not is_bad[s]:
-                for edge in model.out(s):
-                    if is_bad[edge.dst]:
-                        changed = True
-                        is_bad[s] = True
-                        break
-
-    # for s in range(model.num_states()):
-    #     if is_bad[s]:
-    #         f.write(f"State {s} is bad after propagation\n")
-
-    #Calcoliamo il numero di cammini nelle regioni bad (usiamo le biforcazioni)
-    wrong_paths = 0
-    # for s in range(model.num_states()):
-    BFS_Queue = [model.get_init_state_number()]
-    visited = []
-    while BFS_Queue:
-        s = BFS_Queue.pop(0)
-        visited.append(s)
-    #     # Uso un set perchè nel prodotto gli archi possono comparire più volte
-        d_nodes = set()
-        # `model.out(s)` è un oggetto iterabile che può risultare Truthy anche se vuoto,
-        # quindi verifichiamo l'assenza di archi esplicitamente.
-        # has_out = any(True for _ in model.out(s))
-        # if not has_out:
-        #     wrong_paths += 1
+    # Tutti gli stati che portano verso uno stato "bad" vengono segnati come "bad"
+    # Propagazione backward O(V + E)
+    in_edges = [[] for _ in range(num_states)]
+    for s in range(num_states):
         for edge in model.out(s):
-            # Uso dst_id per il nodo del cgs, mentre uso edge.dst per lo stato del prodotto
-            #src_id = mapping[edge.src][0]
+            in_edges[edge.dst].append(s)
+
+    bad_queue = deque([s for s in range(num_states) if is_bad[s]])
+    while bad_queue:
+        curr = bad_queue.popleft()
+        for prev in in_edges[curr]:
+            if not is_bad[prev]:
+                is_bad[prev] = True
+                bad_queue.append(prev)
+
+    # Calcoliamo il numero di cammini nelle regioni bad (usiamo le biforcazioni)
+    wrong_paths = 0
+    init_state = model.get_init_state_number()
+    BFS_Queue = deque([init_state])
+    enqueued = {init_state}
+    visited = set()
+    while BFS_Queue:
+        s = BFS_Queue.popleft()
+        visited.add(s)
+        d_nodes = set()
+        for edge in model.out(s):
             if edge.dst in visited:
                 continue
-            BFS_Queue.append(edge.dst)
+            if edge.dst not in enqueued:
+                enqueued.add(edge.dst)
+                BFS_Queue.append(edge.dst)
             dst_id = mapping[edge.dst][0]
             if is_bad[edge.src] and is_bad[edge.dst]:
                 d_nodes.add(dst_id)
@@ -145,8 +107,8 @@ def evalueate_wrong(model, deadlocks):
             #n-1 per non tenere conto del cammino corrente
             wrong_paths += (n-1)
     
-    #Aggiunto per tutte le strategie non soddisfacienti
-    if is_bad[model.get_init_state_number()]:
+    # Aggiunto per tutte le strategie non soddisfacienti
+    if is_bad[init_state]:
         wrong_paths += 1
 
     return wrong_paths

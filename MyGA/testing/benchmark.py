@@ -1,6 +1,7 @@
 from MyGA.testing.running.case_runner import run_case
 from MyGA.testing.generation.case_generator import generate_case
 from MyGA.config import config
+from MyGA.evolution.csv_buffer import CSV_buffer
 import csv
 import json
 import random
@@ -35,8 +36,11 @@ def run_benchmark(settings_path):
         if 'cases_output' in settings['execution']:
             cases_output = settings['execution']['cases_output']
         generations_output = None
+        csv_buffer = None
         if 'generations_output' in settings['execution']:
             generations_output = settings['execution']['generations_output']
+            scv_buffer = SCV_buffer(generations_output)
+
         output_dir = settings['execution']['directory']
         if ga: config.save_config(f'{output_dir}/ga_settings')
         #output_dir.mkdir(parents=True, exist_ok=True)
@@ -107,7 +111,7 @@ def run_benchmark(settings_path):
                     )
                     runs = run_case(
                         model_path, formula_path, vitamin=vitamin, ga=ga, mixed=mixed, timeout=timeout,
-                        output_path=cases_output, csv_path=generations_output
+                        output_path=cases_output, csv_buffer=csv_buffer
                     )
                     if vitamin:
                         algorithm_runs["vitamin"].extend(runs["vitamin"])

@@ -408,7 +408,7 @@ with tab3:
     st.subheader("GA configuration")
     settings_box = st.container(border=True)
     with settings_box:
-        dyn_setts = st.checkbox("Automatic Settings", False)
+        dyn_setts = st.checkbox("Automatic Settings", True)
         pop_size = st.number_input("Population Size", 1, 500, config.POPULATION_SIZE, disabled=dyn_setts)
         generations = st.number_input("Generations", 1, 1000, config.MAX_GENERATIONS, disabled=dyn_setts)
         elite = st.number_input("Elites", 0, 50, config.N_ELITE, disabled=dyn_setts)

@@ -9,7 +9,7 @@ from model_checker.parsers.game_structures.cgs.cgs_actions import (
 )
 
 
-def prune(cgs: CGS, strategy, coalition):
+def prune(cgs: CGS, strategy, coalition, state_active_props=None):
     """Return a pruned Vitamin CGS that keeps only strategy-consistent transitions."""
     pruned_cgs = CGS()
     # For Vitamin CGS, directly copy the internal representation instead of using read_from_model_object
@@ -25,17 +25,21 @@ def prune(cgs: CGS, strategy, coalition):
 
     atomic_props = [str(p) for p in pruned_cgs.atomic_propositions.copy()]
     matrix_prop = pruned_cgs.matrix_prop
-    graph = [row.copy() for row in pruned_cgs.graph]
+    graph = pruned_cgs.graph
 
     for src_idx, row in enumerate(graph):
-        active_props = [atomic_props[p_idx] for p_idx, val in enumerate(matrix_prop[src_idx]) if val == 1]
+        if state_active_props is not None:
+            active_props = state_active_props[src_idx]
+        else:
+            active_props = [atomic_props[p_idx] for p_idx, val in enumerate(matrix_prop[src_idx]) if val == 1]
+
+        chosen_actions = [strategy.agents[i].get_action(active_props) for i in range(len(coalition))]
 
         for dst_idx, cell in enumerate(row):
             if not isinstance(cell, str) or not cell:
                 continue
 
             if cell == '*':
-                graph[src_idx][dst_idx] = '*'
                 continue
 
             joint_choices = [part.strip() for part in cell.split(JOINT_CHOICE_SEPARATOR) if part.strip()]
@@ -53,7 +57,7 @@ def prune(cgs: CGS, strategy, coalition):
                         is_consistent = False
                         break
 
-                    required_action = strategy.agents[strat_agent_index].get_action(active_props)
+                    required_action = chosen_actions[strat_agent_index]
                     if tokens[cgs_agent_idx] != required_action and tokens[cgs_agent_idx] != '*':
                         is_consistent = False
                         break
@@ -62,15 +66,13 @@ def prune(cgs: CGS, strategy, coalition):
                     filtered_choices.append(joint)
 
             if filtered_choices:
-                graph[src_idx][dst_idx] = JOINT_CHOICE_SEPARATOR.join(filtered_choices)
+                row[dst_idx] = JOINT_CHOICE_SEPARATOR.join(filtered_choices)
             else:
-                graph[src_idx][dst_idx] = 0
+                row[dst_idx] = 0
 
-        if(all(cell == 0 for cell in row)):
+        if all(cell == 0 for cell in row):
             row[src_idx] = '*'
 
-    pruned_cgs.graph = graph
-    
     return pruned_cgs
 
 
