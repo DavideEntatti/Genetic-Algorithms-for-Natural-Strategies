@@ -75,6 +75,11 @@ if 'show_add_form' not in st.session_state:
 if 'running_processes' not in st.session_state:
     st.session_state['running_processes'] = {}
 
+if st.session_state.get('show_add_form', False):
+    add_profile_dialog()
+elif st.session_state.get('editing_profile_id') is not None:
+    edit_profile_dialog(st.session_state['editing_profile_id'])
+
 # 2. TAB Superiori
 tab1, tab2, tab3 = st.tabs(["Find Strategy", "Benchmark", "GA Configuration"])
 
@@ -180,10 +185,13 @@ with tab2:
     with bench_col_left:
         @st.fragment(run_every=1.0) # Si auto-aggiorna ogni 1 secondo finché ci sono processi attivi
         def render_profiles_manager():
+            
             st.markdown("### 📊 Benchmark Profiles")
             
             if st.button("➕ Add New Benchmark Profile", type="primary", use_container_width=True):
-                add_profile_dialog()
+                st.session_state['show_add_form'] = True
+                st.session_state['editing_profile_id'] = None
+                st.rerun()
 
             st.write("")
             
@@ -260,7 +268,9 @@ with tab2:
                             with col_edit:
                                 if not is_running:
                                     if st.button("✏️ Edit", key=f"edit_{p_id}", use_container_width=True):
-                                        edit_profile_dialog(p_id)
+                                        st.session_state['editing_profile_id'] = p_id
+                                        st.session_state['show_add_form'] = False
+                                        st.rerun()
                                 else:
                                     st.button("✏️ Edit", key=f"edit_{p_id}", use_container_width=True, disabled=True)
 

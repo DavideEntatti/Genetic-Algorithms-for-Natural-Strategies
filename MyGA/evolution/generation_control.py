@@ -15,10 +15,11 @@ def search_strategy(formula, model_path, csv_buffer=None):
 
     if config.DYNAMIC_SETTINGS:
         n = len(aps)*len(coalition)*len(agents_actions[0])*k
-        n = max(n, 80)
+        n = int(sqrt(n))
+        n = max(n, 100)
         #n = 50
         pop_size = int(n)
-        gens = int(n)
+        gens = int(n*2)
         n_spec = int(pop_size/5)
         config.set_config(pop_size=pop_size, gens=gens, elites=n_spec, extras=n_spec, tournament=max(n_spec*2, 1))
 

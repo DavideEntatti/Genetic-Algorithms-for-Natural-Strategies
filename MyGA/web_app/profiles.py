@@ -246,10 +246,12 @@ def add_profile_dialog():
             save_profile_to_disk(new_id, result["data"])
             st.session_state['benchmark_profiles'] = load_benchmark_profiles()
             st.success("Profile added successfully!")
+            st.session_state['show_add_form'] = False
             st.rerun()
         else:
             st.error("Please enter a profile name.")
     if result["cancelled"]:
+        st.session_state['show_add_form'] = False
         st.rerun()
 
 @st.dialog("Edit Benchmark Profile", width="large")
@@ -262,8 +264,10 @@ def edit_profile_dialog(profile_id):
                 save_profile_to_disk(profile_id, result["data"])
                 st.session_state['benchmark_profiles'] = load_benchmark_profiles()
                 st.success("Profile updated successfully!")
+                st.session_state['editing_profile_id'] = None
                 st.rerun()
             else:
                 st.error("Please enter a profile name.")
         if result["cancelled"]:
+            st.session_state['editing_profile_id'] = None
             st.rerun()
