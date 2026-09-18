@@ -14,7 +14,7 @@ def search_strategy(formula, model_path, csv_buffer=None):
     formula, coalition, k = NatATL_formula_info(formula)
 
     if config.DYNAMIC_SETTINGS:
-        n = 8*len(coalition)*len(agents_actions[0])*k
+        n = len(aps)*len(coalition)*len(agents_actions[0])*k
         n = max(n, 80)
         #n = 50
         pop_size = int(n)

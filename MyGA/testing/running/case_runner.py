@@ -1,5 +1,6 @@
 from multiprocessing import Process, Queue
 import time
+import psutil
 from datetime import datetime
 from MyGA.testing.running.vitamin_runner import run_vitamin
 from MyGA.testing.running.ga_runner import run_ga
@@ -40,7 +41,14 @@ def run_case(model_path, formula_path, output_path=None, csv_path=None, vitamin=
             p.start()
             p.join(timeout=timeout)
             if p.is_alive():
-                p.terminate()  # Forza la chiusura
+                # Uccisione profonda con psutil
+                try:
+                    parent = psutil.Process(p.pid)
+                    for child in parent.children(recursive=True):
+                        child.kill()
+                    parent.kill()
+                except psutil.NoSuchProcess:
+                    pass
                 p.join()
                 vitamin_status, vitamin_result = False, None
                 print("vitamin timeout")
@@ -61,7 +69,14 @@ def run_case(model_path, formula_path, output_path=None, csv_path=None, vitamin=
                 p.start()
                 p.join(timeout=timeout)
                 if p.is_alive():
-                    p.terminate()  # Forza la chiusura
+                    # Uccisione profonda con psutil
+                    try:
+                        parent = psutil.Process(p.pid)
+                        for child in parent.children(recursive=True):
+                            child.kill()
+                        parent.kill()
+                    except psutil.NoSuchProcess:
+                        pass
                     p.join()
                     ga_status, ga_result = 'Timeout', None
                 else:

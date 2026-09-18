@@ -346,7 +346,7 @@ with tab2:
                 else: plot_key = None
 
                 if st.button("📊 Generate Plot", use_container_width=True, type="primary"):
-                    plot_temp_path = os.path.join(directory, f"plot_{selected_profile['id']}.png")
+                    plot_temp_path = Path(directory + "/output/plot.png")
                     
                     try:
                         if plot_type != 'fitness':

@@ -50,7 +50,7 @@ def draw_plot(
     with open(csv_file, newline="") as source:
         rows = list(csv.DictReader(source))
 
-    if not rows or not rows[1]:
+    if not rows:
         raise ValueError(F"The benchmark CSV does not contain any configurations {csv_file}")
     if plot_key not in rows[0] and plot_type != "fitness":
         raise ValueError(f"Unknown plot key:{plot_key}")
@@ -184,7 +184,6 @@ def get_keys_and_results(csv_file):
         rows = list(csv.DictReader(source))
     
     return {"keys": _available_keys(rows), "results": _available_results(rows)}
-
 
 
 if __name__ == "__main__":
